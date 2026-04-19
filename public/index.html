@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RU Reply</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3f;
+    --accent: #c8a96e;
+    --text: #e8e8f0;
+    --text2: #8888aa;
+    --text3: #55556a;
+    --green: #4caf50;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.2;
+    pointer-events: none;
+  }
+  .wrap {
+    position: relative;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 3px;
+  }
+  .logo-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--accent);
+    color: #000;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .block { margin-bottom: 6px; }
+  .block-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding-left: 2px;
+  }
+  .input-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .input-box:focus-within { border-color: var(--text3); }
+  textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    resize: none;
+  }
+  textarea::placeholder { color: var(--text3); }
+  .arrow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    position: relative;
+  }
+  .arrow-line {
+    position: absolute;
+    left: 50%; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--border);
+    transform: translateX(-50%);
+  }
+  .arrow-icon {
+    position: relative;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    z-index: 1;
+  }
+  .translation-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: none;
+    margin-bottom: 6px;
+  }
+  .translation-box.visible { display: block; }
+  .translation-text { font-size: 15px; line-height: 1.7; color: var(--text2); }
+  .intent-text {
+    font-size: 13px; color: var(--text3);
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--border); line-height: 1.6;
+  }
+  .btn-send {
+    width: 100%; padding: 15px;
+    background: var(--accent); color: #000;
+    border: none; border-radius: 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    margin-top: 6px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-send:hover:not(:disabled) { background: #d4b87a; transform: translateY(-1px); }
+  .btn-send:disabled { background: var(--border); color: var(--text3); cursor: not-allowed; }
+  .result-wrap { margin-top: 6px; display: none; }
+  .result-wrap.visible { display: block; }
+  .result-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+  .result-box.copied-flash { border-color: var(--green); }
+  .ru-text {
+    font-size: 18px; line-height: 1.7;
+    color: var(--accent); font-weight: 500;
+    padding-right: 80px;
+  }
+  .ko-back-text {
+    font-size: 14px; color: var(--text2);
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid var(--border); line-height: 1.6;
+  }
+  .note-text { font-size: 13px; color: var(--text3); margin-top: 10px; line-height: 1.6; }
+  .copy-badge {
+    position: absolute; top: 14px; right: 14px;
+    padding: 5px 12px; border-radius: 6px;
+    font-size: 12px; font-family: 'JetBrains Mono', monospace;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text3); cursor: pointer; transition: all 0.2s;
+  }
+  .copy-badge:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-badge.done { border-color: var(--green); color: var(--green); }
+  .toast {
+    position: fixed; bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--green); color: #000;
+    font-size: 14px; font-weight: 700;
+    padding: 12px 24px; border-radius: 30px;
+    opacity: 0; transition: all 0.3s;
+    pointer-events: none; white-space: nowrap; z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .mini-loading { display: none; align-items: center; gap: 8px; padding: 10px 2px; color: var(--text3); font-size: 13px; }
+  .mini-loading.visible { display: flex; }
+  .mini-spinner {
+    width: 13px; height: 13px;
+    border: 1.5px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.25s ease forwards; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="logo">RU REPLY</span>
+    <span class="logo-badge">v3</span>
+  </header>
+
+  <!-- ① 받은 러시아어 -->
+  <div class="block">
+    <div class="block-label">받은 메시지 (러시아어)</div>
+    <div class="input-box">
+      <textarea id="ruInput" rows="3" placeholder="여기에 붙여넣기…" oninput="onRuInput()"></textarea>
+    </div>
+  </div>
+
+  <div class="mini-loading" id="miniLoad">
+    <div class="mini-spinner"></div>
+    <span>해석 중…</span>
+  </div>
+
+  <div class="translation-box fade-up" id="translationBox">
+    <div class="translation-text" id="translationText"></div>
+    <div class="intent-text" id="intentText"></div>
+  </div>
+
+  <div class="arrow-row">
+    <div class="arrow-line"></div>
+    <div class="arrow-icon">↓</div>
+  </div>
+
+  <!-- ② 한국어 답장 -->
+  <div class="block">
+    <div class="block-label">내 답장 (한국어)</div>
+    <div class="input-box">
+      <textarea id="koInput" rows="3" placeholder="한국어로 답장 입력…"></textarea>
+    </div>
+  </div>
+
+  <button class="btn-send" id="sendBtn" onclick="convertToRussian()">
+    🚀 러시아어로 변환 + 복사
+  </button>
+
+  <div class="result-wrap" id="resultWrap">
+    <div class="arrow-row">
+      <div class="arrow-line"></div>
+      <div class="arrow-icon">↓</div>
+    </div>
+    <div class="result-box" id="resultBox">
+      <div class="ru-text" id="ruResult"></div>
+      <div class="ko-back-text" id="koBackResult"></div>
+      <div class="note-text" id="noteResult"></div>
+      <button class="copy-badge" id="copyBtn" onclick="copyResult()">복사</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">📋 클립보드에 복사됨 — WhatsApp에 붙여넣기하세요</div>
+<textarea id="clipHelper" disabled style="position:fixed;top:-9999px;left:-9999px;opacity:0;width:1px;height:1px;"></textarea>
+
+<script>
+  let interpretTimer = null;
+  let lastRuValue = '';
+
+  async function callAPI(system, user) {
+    const res = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system, user })
+    });
+    if (!res.ok) {
+      const e = await res.json();
+      throw new Error(e.error || '서버 오류');
+    }
+    return (await res.json()).result;
+  }
+
+  function onRuInput() {
+    const val = document.getElementById('ruInput').value.trim();
+    clearTimeout(interpretTimer);
+    if (!val || val === lastRuValue || val.length < 4) {
+      hide('translationBox');
+      return;
+    }
+    interpretTimer = setTimeout(() => interpretRu(val), 800);
+  }
+
+  async function interpretRu(text) {
+    lastRuValue = text;
+    show('miniLoad');
+    hide('translationBox');
+    try {
+      const raw = await callAPI(
+        `러시아어 메시지를 분석해 JSON만 반환. 다른 텍스트 금지.
+{"translation":"한국어 번역","intent":"핵심 의도 한 문장 (말투 포함, 예: 가격 인하 요청 — 압박 톤)"}`,
+        text
+      );
+      const d = JSON.parse(raw.replace(/```json|```/g,'').trim());
+      document.getElementById('translationText').textContent = d.translation;
+      document.getElementById('intentText').textContent = '💡 ' + d.intent;
+      show('translationBox');
+    } catch(e) {
+      // 조용히 넘김
+    } finally {
+      hide('miniLoad');
+    }
+  }
+
+  async function convertToRussian() {
+    const ko = document.getElementById('koInput').value.trim();
+    const ru = document.getElementById('ruInput').value.trim();
+    if (!ko) { alert('한국어 답장을 입력해주세요.'); return; }
+
+    const btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> 변환 중…';
+    hide('resultWrap');
+
+    try {
+      const raw = await callAPI(
+        `You are a native Russian-speaking logistics sales assistant.
+Translate Korean messages into natural Russian for freight forwarding, shipping, cargo, customs, trucking, rail transport, and customer negotiation.
+Style:
+- Professional tone
+- Clear and trustworthy
+- Friendly but businesslike
+- Natural Russian wording
+- No literal Korean structure
+Use proper terminology:
+- rate quotation
+- transit time
+- customs clearance
+- cargo ready date
+- loading
+- container
+- trucking
+- warehouse
+- shipment delay
+- urgent booking
+Requirements:
+- Native-level Russian
+- Natural business tone
+- Never literal translation
+- Clear and concise
+- Trustworthy and persuasive
+- Good for freight/logistics trade communication
+- Adapt wording to context
+
+Return JSON only, no other text:
+{"russian":"러시아어 결과","note":"핵심 표현 설명 1-2문장 (한국어로)"}`,
+        ko + (ru ? `\n\n[상대 메시지 맥락]: ${ru}` : '')
+      );
+      const d = JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+      document.getElementById('ruResult').textContent = d.russian;
+      document.getElementById('koBackResult').textContent = '🇰🇷 ' + ko;
+      document.getElementById('noteResult').textContent = d.note;
+      show('resultWrap');
+      autoCopy(d.russian);
+
+    } catch(e) {
+      alert('오류: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '🚀 러시아어로 변환 + 복사';
+    }
+  }
+
+  function doCopy(text) {
+    const ta = document.getElementById('clipHelper');
+    ta.value = text;
+    ta.removeAttribute('disabled');
+    ta.select();
+    ta.setSelectionRange(0, 99999);
+    const ok = document.execCommand('copy');
+    ta.setAttribute('disabled', '');
+    if (ok) { flashCopied(); showToast(); }
+    else { alert('복사 실패. 텍스트를 직접 선택해서 복사해주세요.'); }
+  }
+
+  function autoCopy(text) { doCopy(text); }
+  function copyResult() { doCopy(document.getElementById('ruResult').textContent); }
+
+  function flashCopied() {
+    const box = document.getElementById('resultBox');
+    const btn = document.getElementById('copyBtn');
+    box.classList.add('copied-flash');
+    btn.textContent = '✓ 복사됨';
+    btn.classList.add('done');
+    setTimeout(() => {
+      box.classList.remove('copied-flash');
+      btn.textContent = '복사';
+      btn.classList.remove('done');
+    }, 3000);
+  }
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  function show(id) { document.getElementById(id).classList.add('visible'); }
+  function hide(id) { document.getElementById(id).classList.remove('visible'); }
+</script>
+</body>
+</html>
